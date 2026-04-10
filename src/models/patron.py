@@ -13,19 +13,15 @@ class Patron:
     membership_date: datetime
     role: str  # regular/student/teacher
     status: str  # active/expired/suspended
-    fines: float
     monthly_payment: float
     discount_rate: float
-
-    def get_total_payment(self) -> float:
-        return self.monthly_payment * (self.discount_rate // 100) + self.fines
 
 
 @dataclass
 class TeacherPatron(Patron):
-    discount_rate: float
+    pass
 
 
 @dataclass
 class StudentPatron(Patron):
-    discount_rate: float
+    pass
