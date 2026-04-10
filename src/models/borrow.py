@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import Optional
 
 @dataclass
-class Loan:
-    loan_id: str
+class Borrow:
+    borrow_id: str
     book_id: str
     patron_id: str
     checkout_date: datetime
