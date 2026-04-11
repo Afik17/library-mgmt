@@ -52,7 +52,7 @@ class InMemoryPatronRepo(PatronRepo):
         return self._table.pop(patron_id)
 
     def get_by_id(self, patron_id: str) -> Patron:
-        return self._table[patron_id]
+        return self._table.get(patron_id)
 
     def find_by_criteria(self, **criteria: any) -> list[Book]:
         results = []
@@ -87,7 +87,7 @@ class InMemoryBorrowRepo(BorrowRepo):
         self._table.pop(borrow_id)
 
     def get_by_id(self, borrow_id: str) -> Borrow:
-        return self._table[borrow_id]
+        return self._table.get(borrow_id)
 
     def find_by_criteria(self, **criteria: any) -> list[Book]:
         results = []
