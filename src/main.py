@@ -6,14 +6,13 @@ from core.logs.csv import CSVTransactionLogger
 from models.book import Book
 from models.patron import Patron
 from repositories.memory import InMemoryBookRepo, InMemoryBorrowRepo, InMemoryPatronRepo
+from routers.library import Library
 from schemas.book import BookCreateRequest, BookUpdateRequest
 from schemas.borrow import BorrowCreateRequest
 from schemas.patron import PatronCreateRequest
 from services.borrow import BorrowManager
 from services.inventory import InventoryManager
-from services.library import Library
 from services.patron import PatronManager
-
 
 settings = get_settings()
 
@@ -147,8 +146,8 @@ borrows_to_create = [
 for borrow in borrows_to_create:
     library.borrows.init_borrow(borrow=borrow)
 
-# print(library.borrows.get_patron_overdue_borrows(patron_id=first_patron.patron_id))
-# print(library.borrows.get_active_borrows())
+print(library.get_patron_overdue_borrows(patron_id=first_patron.patron_id))
+print(library.borrows.get_active_borrows())
 print(
-    library.borrows.calculate_patron_overdues_fines(patron_id=seconed_patron.patron_id)
+    library.calculate_patron_overdues_fines(patron_id=seconed_patron.patron_id)
 )

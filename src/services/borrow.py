@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional
 
+from core.exceptions.borrow import BorrowNotFound
 from core.logs.base import TransactionActions, TransactionLogger
 from models.borrow import Borrow
 from repositories.base import BorrowRepo
@@ -28,6 +29,8 @@ class BorrowManager:
         return new_borrow
 
     def extend_borrow_period(self, borrow_id: str, days: int) -> Borrow:
+        if not self.borrows.get_borrow_by_id(borrow_id=borrow_id):
+            raise BorrowNotFound(msg=f"Borrow {borrow_id} not found", status_code=404)
         borrow = self.get_borrow_by_id(borrow_id=borrow_id)
         borrow.due_date = borrow.due_date + timedelta(days=days)
         self.repo.update(borrow)
@@ -40,6 +43,8 @@ class BorrowManager:
         return borrow
 
     def end_borrow(self, borrow_id: str) -> None:
+        if not self.borrows.get_borrow_by_id(borrow_id=borrow_id):
+            raise BorrowNotFound(msg=f"Borrow {borrow_id} not found", status_code=404)
         borrow = self.get_borrow_by_id(borrow_id=borrow_id)
         borrow.return_date = datetime.now()
         self.repo.update(borrow)
@@ -53,7 +58,7 @@ class BorrowManager:
     def get_borrow_by_id(self, borrow_id: str) -> Borrow:
         return self.repo.get_by_id(borrow_id)
 
-    def get_patron_borrows(self, patron_id: str) -> list[str]:
+    def get_patron_borrows(self, patron_id: str) -> list[Borrow]:
         return self.repo.find_by_criteria(patron_id=patron_id)
 
     def get_patron_active_borrows(self, patron_id: str) -> list[Borrow]:
