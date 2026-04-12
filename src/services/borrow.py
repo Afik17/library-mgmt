@@ -1,7 +1,6 @@
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional
 
 from core.exceptions.borrow import BorrowNotFound
 from core.logs.base import TransactionActions, TransactionLogger
@@ -30,7 +29,7 @@ class BorrowManager:
 
     def extend_borrow_period(self, borrow_id: str, days: int) -> Borrow:
         if not self.borrows.get_borrow_by_id(borrow_id=borrow_id):
-            raise BorrowNotFound(msg=f"Borrow {borrow_id} not found", status_code=404)
+            raise BorrowNotFound(borrow_id=borrow_id)
         borrow = self.get_borrow_by_id(borrow_id=borrow_id)
         borrow.due_date = borrow.due_date + timedelta(days=days)
         self.repo.update(borrow)
@@ -44,7 +43,7 @@ class BorrowManager:
 
     def end_borrow(self, borrow_id: str) -> None:
         if not self.borrows.get_borrow_by_id(borrow_id=borrow_id):
-            raise BorrowNotFound(msg=f"Borrow {borrow_id} not found", status_code=404)
+            raise BorrowNotFound(borrow_id=borrow_id)
         borrow = self.get_borrow_by_id(borrow_id=borrow_id)
         borrow.return_date = datetime.now()
         self.repo.update(borrow)

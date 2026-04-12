@@ -6,4 +6,5 @@ class BorrowError(LibraryError):
 
 
 class BorrowNotFound(BorrowError):
-    pass
+    def __init__(self, borrow_id: str):
+        super().__init__(f"Borrow {borrow_id} not found", 404)

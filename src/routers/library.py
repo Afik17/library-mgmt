@@ -25,28 +25,24 @@ class Library:
 
     def init_borrow(self, borrow: BorrowCreateRequest) -> Borrow:
         if not self.inventory.search_books(book_id=borrow.book_id):
-            raise BookNotFound(
-                msg=f"Book {borrow.book_id} Not found in inventory", status_code=404
-            )
+            raise BookNotFound(book_id=borrow.book_id)
         if not self.patrons.get_patron_by_id(patron_id=borrow.patron_id):
-            raise PatronNotFound(
-                msg=f"Patron {borrow.patron_id} not found", status_code=404
-            )
+            raise PatronNotFound(patron_id=borrow.patron_id)
         return self.borrows.init_borrow(borrow=borrow)
 
     def get_patron_borrows(self, patron_id: str) -> list[Borrow]:
         if not self.patrons.get_patron_by_id(patron_id=patron_id):
-            raise PatronNotFound(msg=f"Patron {patron_id} not found", status_code=404)
+            raise PatronNotFound(patron_id=patron_id)
         return self.borrows.get_patron_borrows(patron_id=patron_id)
 
     def get_patron_active_borrows(self, patron_id: str) -> list[Borrow]:
         if not self.patrons.get_patron_by_id(patron_id=patron_id):
-            raise PatronNotFound(msg=f"Patron {patron_id} not found", status_code=404)
+            raise PatronNotFound(patron_id=patron_id)
         return self.borrows.get_patron_active_borrows(patron_id=patron_id)
 
     def get_patron_overdue_borrows(self, patron_id: str) -> list[Borrow]:
         if not self.patrons.get_patron_by_id(patron_id=patron_id):
-            raise PatronNotFound(msg=f"Patron {patron_id} not found", status_code=404)
+            raise PatronNotFound(patron_id=patron_id)
         active_borrows: list[Borrow] = self.get_patron_active_borrows(patron_id)
         overdue_borrows = [
             borrow for borrow in active_borrows if borrow.due_date <= datetime.now()
@@ -55,5 +51,5 @@ class Library:
 
     def calculate_patron_overdues_fines(self, patron_id: str) -> float:
         if not self.patrons.get_patron_by_id(patron_id=patron_id):
-            raise PatronNotFound(msg=f"Patron {patron_id} not found", status_code=404)
+            raise PatronNotFound(patron_id=patron_id)
         return self.borrows.calculate_patron_overdues_fines(patron_id=patron_id)

@@ -6,4 +6,5 @@ class InventoryError(LibraryError):
 
 
 class BookNotFound(InventoryError):
-    pass
+    def __init__(self, book_id: str):
+        super().__init__(f"Book {book_id} not found", 404)
