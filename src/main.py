@@ -14,13 +14,14 @@ from services.borrow import BorrowManager
 from services.inventory import InventoryManager
 from services.patron import PatronManager
 
+
 settings = get_settings()
 
 book_repo = InMemoryBookRepo()
 patron_repo = InMemoryPatronRepo()
 borrow_repo = InMemoryBorrowRepo()
 
-logger = CSVTransactionLogger(file_path="log.csv")
+logger = CSVTransactionLogger(file_path=settings.transactions_file_path)
 
 inventory = InventoryManager(book_repo=book_repo, logger=logger)
 patrons = PatronManager(repo=patron_repo, logger=logger)
@@ -100,7 +101,7 @@ patrons_to_add = [
         role="student",
         status="active",
         monthly_payment=5.0,
-        discount_rate=0.20,  # 20% Student discount
+        discount_rate=0.20,
     ),
 ]
 
@@ -148,6 +149,4 @@ for borrow in borrows_to_create:
 
 print(library.get_patron_overdue_borrows(patron_id=first_patron.patron_id))
 print(library.borrows.get_active_borrows())
-print(
-    library.calculate_patron_overdues_fines(patron_id=seconed_patron.patron_id)
-)
+print(library.calculate_patron_overdues_fines(patron_id=seconed_patron.patron_id))

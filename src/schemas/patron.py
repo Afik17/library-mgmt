@@ -25,7 +25,7 @@ class Patron(BaseModel):
     birth_date: datetime
     membership_date: datetime
     role: PatronRole
-    status: PatronStatus  # active/expired/suspended
+    status: PatronStatus
     monthly_payment: float
     discount_rate: float
 

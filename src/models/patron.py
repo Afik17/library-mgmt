@@ -11,8 +11,8 @@ class Patron:
     phone_number: str
     birth_date: datetime
     membership_date: datetime
-    role: str  # regular/student/teacher
-    status: str  # active/expired/suspended
+    role: str
+    status: str
     monthly_payment: float
     discount_rate: float
 
