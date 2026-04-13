@@ -20,8 +20,8 @@ class BorrowCreateResponse(Borrow):
     borrow_id: str
 
 
-class BorrowUpdateRequest(Borrow):
-    pass
+class BorrowExtendRequest(BaseModel):
+    days: int
 
 
 class BorrowUpdateResponse(Borrow):

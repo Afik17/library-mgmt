@@ -1,7 +1,8 @@
 from datetime import datetime
 from enum import StrEnum
+from typing import Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class PatronRole(StrEnum):
@@ -17,7 +18,6 @@ class PatronStatus(StrEnum):
 
 
 class Patron(BaseModel):
-    patron_id: str
     first_name: str
     last_name: str
     email: EmailStr
@@ -26,12 +26,25 @@ class Patron(BaseModel):
     membership_date: datetime
     role: PatronRole
     status: PatronStatus
-    monthly_payment: float
-    discount_rate: float
+    monthly_payment: float = Field(min=0)
+    discount_rate: float = Field(min=0, max=100)
 
 
 class PatronCreateRequest(Patron):
-    pass
+    patron_id: str
+
+
+class PatronUpdateRequest(Patron):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = None
+    birth_date: Optional[datetime] = None
+    membership_date: Optional[datetime] = None
+    role: Optional[PatronRole] = None
+    status: Optional[PatronStatus] = None
+    monthly_payment: float = Field(min=0, default=None)
+    discount_rate: float = Field(min=0, max=100, default=None)
 
 
 class PatronCreateResponse(Patron):

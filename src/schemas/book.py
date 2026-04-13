@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Book(BaseModel):
@@ -9,9 +9,10 @@ class Book(BaseModel):
     author: str
     isbn: str
     category: str
-    description: Optional[str] = "No desc provided"
+    description: Optional[str] = ""
     language: Optional[str] = "English"
     publish_date: datetime
+    total_copies: int = Field(min=0, default=0)
 
 
 class BookCreateRequest(Book):
@@ -23,9 +24,16 @@ class BookCreateResponse(Book):
 
 
 class BookUpdateRequest(Book):
-    book_id: str
-    pass
+    title: Optional[str] = None
+    author: Optional[str] = None
+    isbn: Optional[str] = None
+    category: Optional[str] = None
+    description: Optional[str] = None
+    language: Optional[str] = None
+    publish_date: Optional[datetime] = None
+    total_copies: int = Field(min=0, default=None)
+    available_copies: int = Field(min=0, default=None)
 
 
 class BookUpdateResponse(Book):
-    pass
+    book_id: str
