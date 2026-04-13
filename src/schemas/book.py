@@ -19,7 +19,7 @@ class BookCreateRequest(Book):
     pass
 
 
-class BookCreateResponse(Book):
+class BookResponse(Book):
     book_id: str
 
 
