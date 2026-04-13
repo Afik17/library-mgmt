@@ -3,7 +3,7 @@ from datetime import datetime
 
 from core.exceptions.inventory import BookNotFound
 from core.exceptions.patron import PatronNotFound
-from models.borrow import Borrow
+from entities.borrow import Borrow
 from schemas.borrow import BorrowCreateRequest
 from services.borrow import BorrowManager
 from services.inventory import InventoryManager
