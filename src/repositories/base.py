@@ -1,18 +1,18 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from models.patron import Patron
-from models.book import Book
-from models.borrow import Borrow
+from entities.book import Book
+from entities.borrow import Borrow
+from entities.patron import Patron
 
 
 class BookRepo(ABC):
     @abstractmethod
-    def save(self, book: Book) -> None:
+    def save(self, book: Book) -> Book:
         pass
 
     @abstractmethod
-    def update(self, book: Book) -> None:
+    def update(self, book_id: str, updated_fields: dict[str, any]) -> Book:
         pass
 
     @abstractmethod
@@ -34,11 +34,11 @@ class BookRepo(ABC):
 
 class PatronRepo(ABC):
     @abstractmethod
-    def save(self, patron: Patron) -> None:
+    def save(self, patron: Patron) -> Patron:
         pass
 
     @abstractmethod
-    def update(self, patron: Patron) -> None:
+    def update(self, patron_id: str, updated_fields: dict[str, any]) -> Patron:
         pass
 
     @abstractmethod
@@ -60,11 +60,11 @@ class PatronRepo(ABC):
 
 class BorrowRepo(ABC):
     @abstractmethod
-    def save(borrow: Borrow) -> None:
+    def save(borrow: Borrow) -> Borrow:
         pass
 
     @abstractmethod
-    def update(borrow: Borrow) -> None:
+    def update(borrow_id: str, updated_fields: dict[str, any]) -> Borrow:
         pass
 
     @abstractmethod

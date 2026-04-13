@@ -1,6 +1,6 @@
-from models.book import Book
-from models.borrow import Borrow
-from models.patron import Patron
+from entities.book import Book
+from entities.borrow import Borrow
+from entities.patron import Patron
 from repositories.base import BookRepo, BorrowRepo, PatronRepo
 
 
