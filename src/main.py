@@ -3,13 +3,20 @@ from datetime import datetime
 
 from core.config import get_settings
 from core.logs.csv import CSVTransactionLogger
-from models.book import Book
-from models.patron import Patron
+from entities.book import Book
+from entities.patron import Patron
 from repositories.memory import InMemoryBookRepo, InMemoryBorrowRepo, InMemoryPatronRepo
+from repositories.mongodb import (
+    MongoDBBookRepo,
+    MongoDBBorrowRepo,
+    MongoDBPatronRepo,
+    init_db,
+    disconnect_db,
+)
 from routers.library import Library
 from schemas.book import BookCreateRequest, BookUpdateRequest
 from schemas.borrow import BorrowCreateRequest
-from schemas.patron import PatronCreateRequest
+from schemas.patron import PatronCreateRequest, PatronUpdateRequest
 from services.borrow import BorrowManager
 from services.inventory import InventoryManager
 from services.patron import PatronManager
@@ -17,9 +24,18 @@ from services.patron import PatronManager
 
 settings = get_settings()
 
-book_repo = InMemoryBookRepo()
-patron_repo = InMemoryPatronRepo()
-borrow_repo = InMemoryBorrowRepo()
+init_db(
+    uri=settings.mongodb.uri,
+    port=settings.mongodb.port,
+    db=settings.mongodb.db,
+    username=settings.mongodb.username,
+    password=settings.mongodb.password,
+)
+
+
+book_repo = MongoDBBookRepo()
+patron_repo = MongoDBPatronRepo()
+borrow_repo = MongoDBBorrowRepo()
 
 logger = CSVTransactionLogger(file_path=settings.transactions_file_path)
 
@@ -41,6 +57,7 @@ books_to_add = [
         isbn="978-1492029502",
         category="DevOps",
         publish_date=datetime(2018, 7, 24),
+        total_copies=6,
     ),
     BookCreateRequest(
         title="Accelerate",
@@ -48,6 +65,7 @@ books_to_add = [
         isbn="978-1942788331",
         category="Management",
         publish_date=datetime(2018, 3, 27),
+        total_copies=9,
     ),
     BookCreateRequest(
         title="Kubernetes: Up and Running",
@@ -55,6 +73,7 @@ books_to_add = [
         isbn="978-1492046530",
         category="Infrastructure",
         publish_date=datetime(2019, 10, 22),
+        total_copies=10,
     ),
 ]
 
@@ -62,11 +81,13 @@ for book in books_to_add:
     library.inventory.add_book(book)
 
 searched_book: Book = library.inventory.search_books(
-    title="Kubernetes", category="Infrastructure"
+    title="Kubernetes: Up and Running", category="Infrastructure"
 )[0]
 
-searched_book.author = "Dana team"
-library.inventory.update_book(book=BookUpdateRequest(**asdict(searched_book)))
+searched_book.author = "DanaTeam"
+library.inventory.update_book(
+    book_id=searched_book.book_id, book=BookUpdateRequest(**asdict(searched_book))
+)
 
 first_book = library.inventory.search_books(publish_date=datetime(2018, 3, 27))[0]
 second_book = library.inventory.search_books(publish_date=datetime(2019, 10, 22))[0]
@@ -101,27 +122,30 @@ patrons_to_add = [
         role="student",
         status="active",
         monthly_payment=5.0,
-        discount_rate=0.20,
+        discount_rate=20.0,
     ),
 ]
 
 for patron in patrons_to_add:
     library.patrons.register_new_patron(patron=patron)
 
+print(library.patrons.get_patron_by_id(patron_id="213994783"))
 print(library.patrons.get_patrons_by_status(status="active"))
 print(library.patrons.get_all())
 first_patron: Patron = library.patrons.get_patron_by_name(
-    first_name="Jane", last_name="smith"
+    first_name="Jane", last_name="Smith"
 )[0]
 first_patron.discount_rate = 55.0
-library.patrons.update_patron(patron=patron)
+library.patrons.update_patron(
+    patron_id=first_patron.patron_id, patron=PatronUpdateRequest(**asdict(first_patron))
+)
 seconed_patron: Patron = library.patrons.get_patron_by_name(
     first_name="John", last_name="Doe"
 )[0]
 print("----------------------------------------------")
 
 
-""" Test BorrowManager """
+# """ Test BorrowManager """
 
 borrows_to_create = [
     BorrowCreateRequest(
@@ -150,3 +174,6 @@ for borrow in borrows_to_create:
 print(library.get_patron_overdue_borrows(patron_id=first_patron.patron_id))
 print(library.borrows.get_active_borrows())
 print(library.calculate_patron_overdues_fines(patron_id=seconed_patron.patron_id))
+
+
+disconnect_db()
