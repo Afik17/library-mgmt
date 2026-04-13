@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from core.exceptions.borrow import BorrowNotFound
 from core.logs.base import TransactionActions, TransactionLogger
-from models.borrow import Borrow
+from entities.borrow import Borrow
 from repositories.base import BorrowRepo
 from schemas.borrow import BorrowCreateRequest
 
@@ -28,31 +28,36 @@ class BorrowManager:
         return new_borrow
 
     def extend_borrow_period(self, borrow_id: str, days: int) -> Borrow:
-        if not self.borrows.get_borrow_by_id(borrow_id=borrow_id):
-            raise BorrowNotFound(borrow_id=borrow_id)
         borrow = self.get_borrow_by_id(borrow_id=borrow_id)
-        borrow.due_date = borrow.due_date + timedelta(days=days)
-        self.repo.update(borrow)
+        if not borrow:
+            raise BorrowNotFound(borrow_id=borrow_id)
+        new_due_date = borrow.due_date + timedelta(days=days)
+        updated_borrow = self.repo.update(
+            borrow_id=borrow_id, updated_fields={"due_date": new_due_date}
+        )
         self.logger.record_transaction(
             action=TransactionActions.EXTEND_BORROW,
             book_id=borrow.book_id,
             patron_id=borrow.patron_id,
             borrow_id=borrow.borrow_id,
         )
-        return borrow
+        return updated_borrow
 
-    def end_borrow(self, borrow_id: str) -> None:
-        if not self.borrows.get_borrow_by_id(borrow_id=borrow_id):
-            raise BorrowNotFound(borrow_id=borrow_id)
+    def end_borrow(self, borrow_id: str) -> Borrow:
         borrow = self.get_borrow_by_id(borrow_id=borrow_id)
-        borrow.return_date = datetime.now()
-        self.repo.update(borrow)
+        if not borrow:
+            raise BorrowNotFound(borrow_id=borrow_id)
+        updated_fields = {"return_date": datetime.now()}
+        updated_borrow = self.repo.update(
+            borrow_id=borrow_id, updated_fields=updated_fields
+        )
         self.logger.record_transaction(
             action=TransactionActions.END_BORROW,
             book_id=borrow.book_id,
             patron_id=borrow.patron_id,
             borrow_id=borrow_id,
         )
+        return updated_borrow
 
     def get_borrow_by_id(self, borrow_id: str) -> Borrow:
         return self.repo.get_by_id(borrow_id)

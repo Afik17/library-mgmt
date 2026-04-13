@@ -1,7 +1,9 @@
+from typing import Optional
+
 from core.logs.base import TransactionActions, TransactionLogger
-from models.patron import Patron, StudentPatron, TeacherPatron
+from entities.patron import Patron, StudentPatron, TeacherPatron
 from repositories.base import PatronRepo
-from schemas.patron import PatronCreateRequest
+from schemas.patron import PatronCreateRequest, PatronUpdateRequest
 
 
 class PatronManager:
@@ -38,21 +40,25 @@ class PatronManager:
         )
         return patron_based_role(patron)
 
-    def update_patron(self, patron: Patron) -> None:
-        self.repo.update(patron)
+    def update_patron(self, patron_id: str, patron: PatronUpdateRequest) -> Patron:
+        updated_fields = patron.model_dump(exclude_unset=True)
+        updated_patron = self.repo.update(
+            patron_id=patron_id, updated_fields=updated_fields
+        )
         self.logger.record_transaction(
             action=TransactionActions.UPDATE_PATRON,
-            patron_id=patron.patron_id,
+            patron_id=patron_id,
         )
+        return updated_patron
 
     def remove_patron(self, patron_id: str) -> None:
-        self.repo.remove(patron_id)
+        self.repo.remove(patron_id=patron_id)
         self.logger.record_transaction(
             action=TransactionActions.REMOVE_PATRON,
             patron_id=patron_id,
         )
 
-    def get_patron_by_id(self, patron_id: str) -> Patron:
+    def get_patron_by_id(self, patron_id: str) -> Optional[Patron]:
         return self.repo.get_by_id(patron_id)
 
     def get_patron_by_name(self, first_name: str, last_name: str) -> list[Patron]:

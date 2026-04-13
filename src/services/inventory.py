@@ -2,7 +2,7 @@ import uuid
 from dataclasses import dataclass
 
 from core.logs.base import TransactionActions, TransactionLogger
-from models.book import Book
+from entities.book import Book
 from repositories.base import BookRepo
 from schemas.book import (
     BookCreateRequest,
@@ -17,18 +17,22 @@ class InventoryManager:
 
     def add_book(self, book: BookCreateRequest) -> Book:
         book_id = str(uuid.uuid4())[:8]
-        new_book = Book(book_id=book_id, **book.model_dump())
+        new_book = Book(
+            book_id=book_id, available_copies=book.total_copies, **book.model_dump()
+        )
         self.book_repo.save(book=new_book)
         self.logger.record_transaction(
             action=TransactionActions.ADD_BOOK, book_id=book_id
         )
         return new_book
 
-    def update_book(self, book: BookUpdateRequest) -> Book:
-        updated_book = Book(**book.model_dump())
-        self.book_repo.update(book=updated_book)
+    def update_book(self, book_id: str, book: BookUpdateRequest) -> Book:
+        updated_fields = book.model_dump(exclude_unset=True)
+        updated_book: Book = self.book_repo.update(
+            book_id=book_id, updated_fields=updated_fields
+        )
         self.logger.record_transaction(
-            action=TransactionActions.UPDATE_BOOK, book_id=book.book_id
+            action=TransactionActions.UPDATE_BOOK, book_id=book_id
         )
         return updated_book
 
