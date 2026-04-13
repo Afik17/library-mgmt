@@ -1,9 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime
 
-from core.exceptions.inventory import BookNotFound
+from core.exceptions.inventory import BookNotFound, BookUnAvailable
 from core.exceptions.patron import PatronNotFound
+from entities.book import Book
 from entities.borrow import Borrow
+from schemas.book import BookUpdateRequest
 from schemas.borrow import BorrowCreateRequest
 from services.borrow import BorrowManager
 from services.inventory import InventoryManager
@@ -24,10 +26,17 @@ class Library:
     borrows: BorrowManager
 
     def init_borrow(self, borrow: BorrowCreateRequest) -> Borrow:
-        if not self.inventory.search_books(book_id=borrow.book_id):
+        book: Book = self.inventory.get_book_by_id(book_id=borrow.book_id)
+        if not book:
             raise BookNotFound(book_id=borrow.book_id)
+        if not book.available_copies:
+            raise BookUnAvailable(book_id=book.book_id)
         if not self.patrons.get_patron_by_id(patron_id=borrow.patron_id):
             raise PatronNotFound(patron_id=borrow.patron_id)
+        book.available_copies -= 1
+        self.inventory.update_book(
+            book_id=book.book_id, book=BookUpdateRequest(**asdict(book))
+        )
         return self.borrows.init_borrow(borrow=borrow)
 
     def get_patron_borrows(self, patron_id: str) -> list[Borrow]:

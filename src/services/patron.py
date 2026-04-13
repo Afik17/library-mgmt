@@ -1,5 +1,6 @@
 from typing import Optional
 
+from core.exceptions.patron import DuplicatePatron
 from core.logs.base import TransactionActions, TransactionLogger
 from entities.patron import Patron, StudentPatron, TeacherPatron
 from repositories.base import PatronRepo
@@ -33,6 +34,8 @@ class PatronManager:
         return patron
 
     def register_new_patron(self, patron: PatronCreateRequest) -> Patron:
+        if self.get_patron_by_id(patron_id=patron.patron_id):
+            raise DuplicatePatron(patron_id=patron.patron_id)
         patron_based_role = self._roles.get(patron.role)
         self.logger.record_transaction(
             action=TransactionActions.REGISTER_PATRON,

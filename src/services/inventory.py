@@ -1,6 +1,8 @@
+from typing import Optional
 import uuid
 from dataclasses import dataclass
 
+from core.exceptions.inventory import DuplicateBook
 from core.logs.base import TransactionActions, TransactionLogger
 from entities.book import Book
 from repositories.base import BookRepo
@@ -16,6 +18,8 @@ class InventoryManager:
     logger: TransactionLogger
 
     def add_book(self, book: BookCreateRequest) -> Book:
+        if self.search_books(title=book.title, author=book.author):
+            raise DuplicateBook(title=book.title, author=book.author)
         book_id = str(uuid.uuid4())[:8]
         new_book = Book(
             book_id=book_id, available_copies=book.total_copies, **book.model_dump()
@@ -41,6 +45,9 @@ class InventoryManager:
         self.logger.record_transaction(
             action=TransactionActions.REMOVE_BOOK, book_id=book_id
         )
+
+    def get_book_by_id(self, book_id: str) -> Optional[Book]:
+        return self.book_repo.get_by_id(book_id=book_id)
 
     def search_books(self, **criteria) -> list[Book]:
         return self.book_repo.find_by_criteria(**criteria)
