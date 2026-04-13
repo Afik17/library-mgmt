@@ -169,7 +169,7 @@ borrows_to_create = [
 ]
 
 for borrow in borrows_to_create:
-    library.borrows.init_borrow(borrow=borrow)
+    library.init_borrow(borrow=borrow)
 
 print(library.get_patron_overdue_borrows(patron_id=first_patron.patron_id))
 print(library.borrows.get_active_borrows())
