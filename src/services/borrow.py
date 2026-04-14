@@ -2,11 +2,11 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from core.exceptions.borrow import BorrowNotFound
-from core.logs.base import TransactionActions, TransactionLogger
-from entities.borrow import Borrow
-from repositories.base import BorrowRepo
-from schemas.borrow import BorrowCreateRequest
+from src.core.exceptions.borrow import BorrowNotFound
+from src.core.logs.base import TransactionActions, TransactionLogger
+from src.entities.borrow import Borrow
+from src.repositories.base import BorrowRepo
+from src.schemas.borrow import BorrowCreateRequest
 
 
 @dataclass

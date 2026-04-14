@@ -1,15 +1,15 @@
 from dataclasses import asdict, dataclass
 from datetime import datetime
 
-from core.exceptions.inventory import BookNotFound, BookUnAvailable
-from core.exceptions.patron import PatronNotFound
-from entities.book import Book
-from entities.borrow import Borrow
-from schemas.book import BookUpdateRequest
-from schemas.borrow import BorrowCreateRequest
-from services.borrow import BorrowManager
-from services.inventory import InventoryManager
-from services.patron import PatronManager
+from src.core.exceptions.inventory import BookNotFound, BookUnAvailable
+from src.core.exceptions.patron import PatronNotFound
+from src.entities.book import Book
+from src.entities.borrow import Borrow
+from src.schemas.book import BookUpdateRequest
+from src.schemas.borrow import BorrowCreateRequest
+from src.services.borrow import BorrowManager
+from src.services.inventory import InventoryManager
+from src.services.patron import PatronManager
 
 
 @dataclass

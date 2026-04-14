@@ -1,10 +1,10 @@
 from typing import Optional
 
-from core.exceptions.patron import DuplicatePatron
-from core.logs.base import TransactionActions, TransactionLogger
-from entities.patron import Patron, StudentPatron, TeacherPatron
-from repositories.base import PatronRepo
-from schemas.patron import PatronCreateRequest, PatronUpdateRequest
+from src.core.exceptions.patron import DuplicatePatron
+from src.core.logs.base import TransactionActions, TransactionLogger
+from src.entities.patron import Patron, StudentPatron, TeacherPatron
+from src.repositories.base import PatronRepo
+from src.schemas.patron import PatronCreateRequest, PatronUpdateRequest
 
 
 class PatronManager:

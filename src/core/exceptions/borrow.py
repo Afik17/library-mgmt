@@ -1,4 +1,4 @@
-from core.exceptions.base import LibraryError
+from src.core.exceptions.base import LibraryError
 
 
 class BorrowError(LibraryError):

@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from entities.book import Book
-from entities.borrow import Borrow
-from entities.patron import Patron
+from src.entities.book import Book
+from src.entities.borrow import Borrow
+from src.entities.patron import Patron
 
 
 class BookRepo(ABC):

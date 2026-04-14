@@ -2,11 +2,11 @@ from typing import Optional
 import uuid
 from dataclasses import dataclass
 
-from core.exceptions.inventory import DuplicateBook
-from core.logs.base import TransactionActions, TransactionLogger
-from entities.book import Book
-from repositories.base import BookRepo
-from schemas.book import (
+from src.core.exceptions.inventory import DuplicateBook
+from src.core.logs.base import TransactionActions, TransactionLogger
+from src.entities.book import Book
+from src.repositories.base import BookRepo
+from src.schemas.book import (
     BookCreateRequest,
     BookUpdateRequest,
 )

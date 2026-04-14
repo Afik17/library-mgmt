@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from core.logs.base import TransactionActions, TransactionLogger
+from src.core.logs.base import TransactionActions, TransactionLogger
 
 
 class CSVTransactionLogger(TransactionLogger):
