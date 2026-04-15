@@ -1,3 +1,5 @@
+from fastapi import status
+
 from src.core.exceptions.base import LibraryError
 
 
@@ -7,14 +9,17 @@ class InventoryError(LibraryError):
 
 class BookNotFound(InventoryError):
     def __init__(self, book_id: str):
-        super().__init__(f"Book {book_id} not found", 404)
+        super().__init__(f"Book {book_id} not found", status.HTTP_404_NOT_FOUND)
 
 
-class DuplicateBook(InventoryError):
-    def __init__(self, title: str, author: str):
-        super().__init__(f"The Book {title}, by {author}, already exists", 409)
-
-
-class BookUnAvailable(InventoryError):
+class BookUnavailable(InventoryError):
     def __init__(self, book_id: str):
-        super().__init__(f"There is not avaiable copy of Book {book_id}", 451)
+        super().__init__(
+            f"Book {book_id} is unavailable",
+            status.HTTP_451_UNAVAILABLE_FOR_LEGAL_REASONS,
+        )
+
+
+class BookNotBorrowed(InventoryError):
+    def __init__(self, book_id: str):
+        super().__init__(f"Book {book_id} is not borrowed", status.HTTP_409_CONFLICT)
