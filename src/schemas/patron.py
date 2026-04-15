@@ -30,11 +30,11 @@ class Patron(BaseModel):
     discount_rate: float = Field(min=0, max=100)
 
 
-class PatronCreateRequest(Patron):
+class PatronCreate(Patron):
     patron_id: str
 
 
-class PatronUpdateRequest(Patron):
+class PatronUpdate(Patron):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -47,5 +47,14 @@ class PatronUpdateRequest(Patron):
     discount_rate: float = Field(min=0, max=100, default=None)
 
 
-class PatronCreateResponse(Patron):
-    pass
+class PatronResponse(Patron):
+    patron_id: str
+
+
+class PatronSearchCriteria(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = None
+    role: Optional[PatronRole] = None
+    status: Optional[PatronStatus] = None

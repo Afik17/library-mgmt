@@ -1,179 +1,55 @@
-from dataclasses import asdict
-from datetime import datetime
+from contextlib import asynccontextmanager
 
-from core.config import get_settings
-from core.logs.csv import CSVTransactionLogger
-from entities.book import Book
-from entities.patron import Patron
-from repositories.memory import InMemoryBookRepo, InMemoryBorrowRepo, InMemoryPatronRepo
-from repositories.mongodb import (
-    MongoDBBookRepo,
-    MongoDBBorrowRepo,
-    MongoDBPatronRepo,
-    init_db,
-    disconnect_db,
-)
-from routers.library import Library
-from schemas.book import BookCreateRequest, BookUpdateRequest
-from schemas.borrow import BorrowCreateRequest
-from schemas.patron import PatronCreateRequest, PatronUpdateRequest
-from services.borrow import BorrowManager
-from services.inventory import InventoryManager
-from services.patron import PatronManager
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
+from src.core.config import get_settings
+from src.core.exceptions.base import LibraryError
+from src.repositories.mongodb import disconnect_db, init_db
+from src.routers.v1.router import initialize_v1_router
 
 settings = get_settings()
 
-init_db(
-    uri=settings.mongodb.uri,
-    port=settings.mongodb.port,
-    db=settings.mongodb.db,
-    username=settings.mongodb.username,
-    password=settings.mongodb.password,
+app = FastAPI(
+    title="Library management", description="Organize and manage your favorite library"
 )
 
 
-book_repo = MongoDBBookRepo()
-patron_repo = MongoDBPatronRepo()
-borrow_repo = MongoDBBorrowRepo()
-
-logger = CSVTransactionLogger(file_path=settings.transactions_file_path)
-
-inventory = InventoryManager(book_repo=book_repo, logger=logger)
-patrons = PatronManager(repo=patron_repo, logger=logger)
-borrows = BorrowManager(
-    repo=borrow_repo, overdue_return_fine=settings.overdue_return_fine, logger=logger
-)
-
-
-library = Library(inventory=inventory, patrons=patrons, borrows=borrows)
-
-"""" Test InventoryManager"""
-
-books_to_add = [
-    BookCreateRequest(
-        title="The Site Reliability Workbook",
-        author="Betsy Beyer",
-        isbn="978-1492029502",
-        category="DevOps",
-        publish_date=datetime(2018, 7, 24),
-        total_copies=6,
-    ),
-    BookCreateRequest(
-        title="Accelerate",
-        author="Nicole Forsgren",
-        isbn="978-1942788331",
-        category="Management",
-        publish_date=datetime(2018, 3, 27),
-        total_copies=9,
-    ),
-    BookCreateRequest(
-        title="Kubernetes: Up and Running",
-        author="Brendan Burns",
-        isbn="978-1492046530",
-        category="Infrastructure",
-        publish_date=datetime(2019, 10, 22),
-        total_copies=10,
-    ),
-]
-
-for book in books_to_add:
-    library.inventory.add_book(book)
-
-searched_book: Book = library.inventory.search_books(
-    title="Kubernetes: Up and Running", category="Infrastructure"
-)[0]
-
-searched_book.author = "DanaTeam"
-library.inventory.update_book(
-    book_id=searched_book.book_id, book=BookUpdateRequest(**asdict(searched_book))
-)
-
-first_book = library.inventory.search_books(publish_date=datetime(2018, 3, 27))[0]
-second_book = library.inventory.search_books(publish_date=datetime(2019, 10, 22))[0]
-third_book = library.inventory.search_books(publish_date=datetime(2018, 7, 24))[0]
-
-print("----------------------------------------------")
-
-""" Test PatronManager"""
-
-patrons_to_add = [
-    PatronCreateRequest(
-        patron_id="326228637",
-        first_name="John",
-        last_name="Doe",
-        email="john.doe@email.com",
-        phone_number="555-0101",
-        birth_date=datetime(1990, 5, 15),
-        membership_date=datetime.now(),
-        role="regular",
-        status="active",
-        monthly_payment=10.0,
-        discount_rate=0.0,
-    ),
-    PatronCreateRequest(
-        patron_id="213994783",
-        first_name="Jane",
-        last_name="Smith",
-        email="jane.smith@university.edu",
-        phone_number="555-0202",
-        birth_date=datetime(2002, 11, 3),
-        membership_date=datetime.now(),
-        role="student",
-        status="active",
-        monthly_payment=5.0,
-        discount_rate=20.0,
-    ),
-]
-
-for patron in patrons_to_add:
-    library.patrons.register_new_patron(patron=patron)
-
-print(library.patrons.get_patron_by_id(patron_id="213994783"))
-print(library.patrons.get_patrons_by_status(status="active"))
-print(library.patrons.get_all())
-first_patron: Patron = library.patrons.get_patron_by_name(
-    first_name="Jane", last_name="Smith"
-)[0]
-first_patron.discount_rate = 55.0
-library.patrons.update_patron(
-    patron_id=first_patron.patron_id, patron=PatronUpdateRequest(**asdict(first_patron))
-)
-seconed_patron: Patron = library.patrons.get_patron_by_name(
-    first_name="John", last_name="Doe"
-)[0]
-print("----------------------------------------------")
+# Future use with adync ODM beanie
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     init_db(
+#         uri=settings.mongodb.uri,
+#         port=settings.mongodb.port,
+#         db=settings.mongodb.db,
+#         username=settings.mongodb.username,
+#         password=settings.mongodb.password,
+#     )
+#     yield
+#     disconnect_db()
 
 
-# """ Test BorrowManager """
-
-borrows_to_create = [
-    BorrowCreateRequest(
-        book_id=first_book.book_id,
-        patron_id=first_patron.patron_id,
-        checkout_date=datetime.now(),
-        due_date=datetime(2026, 10, 4),
-    ),
-    BorrowCreateRequest(
-        book_id=second_book.book_id,
-        patron_id=seconed_patron.patron_id,
-        checkout_date=datetime(2026, 4, 1),
-        due_date=datetime(2027, 11, 2),
-    ),
-    BorrowCreateRequest(
-        book_id=third_book.book_id,
-        patron_id=first_patron.patron_id,
-        checkout_date=datetime(2026, 3, 1),
-        due_date=datetime(2026, 4, 1),
-    ),
-]
-
-for borrow in borrows_to_create:
-    library.init_borrow(borrow=borrow)
-
-print(library.get_patron_overdue_borrows(patron_id=first_patron.patron_id))
-print(library.borrows.get_active_borrows())
-print(library.calculate_patron_overdues_fines(patron_id=seconed_patron.patron_id))
+@app.on_event("startup")
+async def startup_event():
+    init_db(
+        uri=settings.mongodb.uri,
+        port=settings.mongodb.port,
+        db=settings.mongodb.db,
+        username=settings.mongodb.username,
+        password=settings.mongodb.password,
+    )
 
 
-disconnect_db()
+@app.on_event("shutdown")
+async def shutdown_event():
+    disconnect_db()
+
+
+v1_router = initialize_v1_router()
+
+app.include_router(v1_router)
+
+
+@app.exception_handler(LibraryError)
+async def unicorn_exception_handler(request: Request, exc: LibraryError):
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.msg})
