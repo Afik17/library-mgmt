@@ -10,5 +10,4 @@ class BookDoc(Document):
     description = StringField(required=True)
     language = StringField(required=True)
     publish_date = DateField(required=True)
-    total_copies = IntField(required=True, min_value=0)
-    available_copies = IntField(required=True, min_value=0)
+    status = StringField(required=True)

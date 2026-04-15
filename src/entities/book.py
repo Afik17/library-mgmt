@@ -12,5 +12,4 @@ class Book:
     description: str
     language: str
     publish_date: datetime
-    total_copies: int
-    available_copies: int
+    status: str
