@@ -1,25 +1,25 @@
 from datetime import datetime
 from typing import Optional
 
+from src.repositories.base import Repository
 from src.core.exceptions.patron import DuplicatePatron, PatronNotFound
 from src.core.logs.base import TransactionActions, TransactionLogger
 from src.entities.borrow import Borrow
 from src.entities.patron import Patron, StudentPatron, TeacherPatron
-from src.repositories.base import BorrowRepo, PatronRepo
 from src.schemas.patron import PatronCreate, PatronSearchCriteria, PatronUpdate
 
 
 class PatronManager:
     def __init__(
         self,
-        patron_repo: PatronRepo,
-        borrow_repo: BorrowRepo,
+        patron_repo: Repository[Patron],
+        borrow_repo: Repository[Borrow],
         overdue_return_fine: float,
         logger: TransactionLogger,
     ):
 
-        self.patron_repo: PatronRepo = patron_repo
-        self.borrow_repo: BorrowRepo = borrow_repo
+        self.patron_repo: Repository = patron_repo
+        self.borrow_repo: Repository = borrow_repo
         self.overdue_return_fine: float = overdue_return_fine
         self._roles = {
             "regular": self._create_regular,
@@ -58,7 +58,7 @@ class PatronManager:
             raise PatronNotFound(patron_id=patron_id)
         updated_fields = patron.model_dump(exclude_unset=True)
         updated_patron = self.patron_repo.update(
-            patron_id=patron_id, updated_fields=updated_fields
+            entity_id=patron_id, updated_fields=updated_fields
         )
         self.logger.record_transaction(
             action=TransactionActions.UPDATE_PATRON,
@@ -69,14 +69,14 @@ class PatronManager:
     def remove_patron(self, patron_id: str) -> None:
         if not self.get_patron_by_id(patron_id=patron_id):
             raise PatronNotFound(patron_id=patron_id)
-        self.patron_repo.remove(patron_id=patron_id)
+        self.patron_repo.remove(entity_id=patron_id)
         self.logger.record_transaction(
             action=TransactionActions.REMOVE_PATRON,
             patron_id=patron_id,
         )
 
     def get_patron_by_id(self, patron_id: str) -> Optional[Patron]:
-        return self.patron_repo.get_by_id(patron_id)
+        return self.patron_repo.get_by_id(entity_id=patron_id)
 
     def search_patrons(self, criteria: PatronSearchCriteria) -> list[Patron]:
         return self.patron_repo.find_by_criteria(

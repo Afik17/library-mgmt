@@ -34,7 +34,7 @@ class Library:
         return self.inventory.remove_book(book_id=book_id)
 
     def get_book_by_id(self, book_id: str) -> Optional[Book]:
-        return self.inventory.book_repo.get_by_id(book_id=book_id)
+        return self.inventory.get_book_by_id(book_id=book_id)
 
     def search_books(self, criteria: BookSearchCriteria) -> list[Book]:
         return self.inventory.search_books(criteria=criteria)

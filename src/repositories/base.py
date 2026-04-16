@@ -1,84 +1,26 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Generic, Optional, TypeVar
 
-from src.entities.book import Book
-from src.entities.borrow import Borrow
-from src.entities.patron import Patron
+T = TypeVar("T")
 
 
-class BookRepo(ABC):
+class Repository(ABC, Generic[T]):
     @abstractmethod
-    def save(self, book: Book) -> Book:
+    def save(self, entity: T) -> T:
         pass
 
     @abstractmethod
-    def update(self, book_id: str, updated_fields: dict[str, any]) -> Book:
+    def update(self, entity_id: str, updated_fields: dict[str, any]) -> T:
         pass
 
     @abstractmethod
-    def remove(self, book_id: str) -> None:
+    def remove(self, entity_id: str) -> None:
         pass
 
     @abstractmethod
-    def get_by_id(self, book_id: str) -> Optional[Book]:
+    def get_by_id(self, entity_id: str) -> Optional[T]:
         pass
 
     @abstractmethod
-    def find_by_criteria(self, **criteria) -> list[Book]:
-        pass
-
-    @abstractmethod
-    def get_all(self) -> list[Book]:
-        pass
-
-
-class PatronRepo(ABC):
-    @abstractmethod
-    def save(self, patron: Patron) -> Patron:
-        pass
-
-    @abstractmethod
-    def update(self, patron_id: str, updated_fields: dict[str, any]) -> Patron:
-        pass
-
-    @abstractmethod
-    def remove(self, patron_id: str) -> None:
-        pass
-
-    @abstractmethod
-    def get_by_id(self, patron_id: str) -> Optional[Patron]:
-        pass
-
-    @abstractmethod
-    def find_by_criteria(self, **criteria: any) -> list[Patron]:
-        pass
-
-    @abstractmethod
-    def get_all() -> list[Patron]:
-        pass
-
-
-class BorrowRepo(ABC):
-    @abstractmethod
-    def save(borrow: Borrow) -> Borrow:
-        pass
-
-    @abstractmethod
-    def update(borrow_id: str, updated_fields: dict[str, any]) -> Borrow:
-        pass
-
-    @abstractmethod
-    def remove(borrow_id: str) -> None:
-        pass
-
-    @abstractmethod
-    def get_by_id(borrow_id: str) -> Optional[Borrow]:
-        pass
-
-    @abstractmethod
-    def find_by_criteria(self, **criteria: any) -> list[Borrow]:
-        pass
-
-    @abstractmethod
-    def get_all() -> list[Borrow]:
+    def find_by_criteria(self, **criteria) -> list[T]:
         pass
