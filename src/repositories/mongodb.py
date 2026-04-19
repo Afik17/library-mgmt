@@ -1,8 +1,6 @@
 from dataclasses import asdict
 from typing import Generic, Optional, Type, TypeVar
 
-from mongoengine import connect, disconnect
-
 from src.entities.book import Book
 from src.entities.borrow import Borrow
 from src.entities.patron import Patron
@@ -15,14 +13,6 @@ T = TypeVar("T")  # Entity type
 U = TypeVar("U")  # Document type
 
 
-def init_db(uri: str, port: int, db: str, username: str, password: str) -> None:
-    connect(db=db, host=uri, port=port, username=username, password=password)
-
-
-def disconnect_db() -> None:
-    disconnect(alias="default")
-
-
 class MongoRepo(Repository[T], Generic[T, U]):
     def __init__(self, entity_class: Type[T], doc_class: Type[U], id_field: str = "id"):
         self.entity_class = entity_class
@@ -33,38 +23,36 @@ class MongoRepo(Repository[T], Generic[T, U]):
         return self.doc_class(**asdict(entity))
 
     def _to_entity(self, doc: U) -> T:
-        doc_dict = doc.to_mongo().to_dict()
-        doc_dict.pop("_id")
+        doc_dict = doc.model_dump()
+        doc_dict.pop("id", None)
         return self.entity_class(**doc_dict)
 
-    def save(self, entity: T) -> T:
+    async def save(self, entity: T) -> T:
         doc = self._to_doc(entity=entity)
-        doc.save()
+        await doc.insert()
         return entity
 
-    def update(self, entity_id: str, updated_fields: dict[str, any]) -> T:
-        updated_fields = {f"set__{key}": value for key, value in updated_fields.items()}
-        updated_doc = self.doc_class.objects(**{self.id_field: entity_id}).modify(
-            new=True, **updated_fields
-        )
-        return self._to_entity(doc=updated_doc)
-
-    def remove(self, entity_id: str) -> None:
-        self.doc_class.objects(**{self.id_field: entity_id}).delete()
-
-    def get_by_id(self, entity_id: str) -> Optional[T]:
-        try:
-            doc = self.doc_class.objects.get(**{self.id_field: entity_id})
-        except self.doc_class.DoesNotExist:
-            return None
+    async def update(self, entity_id: str, updated_fields: dict[str, any]) -> T:
+        doc = await self.doc_class.find_one({self.id_field: entity_id})
+        if doc is None:
+            raise ValueError(f"Document with {self.id_field}={entity_id} not found")
+        await doc.set(updated_fields)
         return self._to_entity(doc=doc)
 
-    def get_all(self) -> list[T]:
-        docs = self.doc_class.objects()
+    async def remove(self, entity_id: str) -> None:
+        doc = await self.doc_class.find_one({self.id_field: entity_id})
+        await doc.delete()
+
+    async def get_by_id(self, entity_id: str) -> Optional[T]:
+        doc = await self.doc_class.find_one({self.id_field: entity_id})
+        return self._to_entity(doc=doc) if doc else None
+
+    async def get_all(self) -> list[T]:
+        docs = await self.doc_class.find_all().to_list()
         return [self._to_entity(doc) for doc in docs]
 
-    def find_by_criteria(self, **criteria) -> list[T]:
-        docs = self.doc_class.objects(**criteria)
+    async def find_by_criteria(self, **criteria) -> list[T]:
+        docs = await self.doc_class.find(criteria).to_list()
         return [self._to_entity(doc) for doc in docs]
 
 
