@@ -1,13 +1,19 @@
-from mongoengine import DateField, Document, StringField, IntField
+from datetime import datetime
+
+from beanie import Document
+from pydantic import Field
 
 
 class BookDoc(Document):
-    book_id = StringField(unique=True, required=True)
-    title = StringField(required=True)
-    author = StringField(required=True)
-    isbn = StringField(required=True)
-    category = StringField(required=True)
-    description = StringField(required=True)
-    language = StringField(required=True)
-    publish_date = DateField(required=True)
-    status = StringField(required=True)
+    book_id: str = Field(unique=True)
+    title: str
+    author: str
+    isbn: str
+    category: str
+    description: str
+    language: str
+    publish_date: datetime
+    status: str
+
+    class Settings:
+        name = "books"
