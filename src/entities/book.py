@@ -12,3 +12,4 @@ class Book:
     description: str
     language: str
     publish_date: datetime
+    status: str

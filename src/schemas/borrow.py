@@ -1,7 +1,13 @@
 from datetime import datetime
+from enum import StrEnum
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+class BorrowStatus(StrEnum):
+    ACTIVE = "active"
+    EXPIRED = "expired"
 
 
 class Borrow(BaseModel):
@@ -12,7 +18,7 @@ class Borrow(BaseModel):
     return_date: Optional[datetime] = None
 
 
-class BorrowCreateRequest(Borrow):
+class BorrowCreate(Borrow):
     pass
 
 
@@ -20,9 +26,13 @@ class BorrowCreateResponse(Borrow):
     borrow_id: str
 
 
-class BorrowUpdateRequest(Borrow):
-    pass
+class BorrowExtendRequest(BaseModel):
+    days: int
 
 
-class BorrowUpdateResponse(Borrow):
+class BorrowResponse(Borrow):
     borrow_id: str
+
+
+class BorrowFine(BaseModel):
+    total_fines: float = Field(min=0)
