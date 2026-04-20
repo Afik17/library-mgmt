@@ -2,6 +2,8 @@ from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, status
 
+from src.core.security import RoleVerifier
+from src.schemas.auth import Role
 from src.routers.dependencies.library import get_library
 from src.schemas.book import (
     BookBorrow,
@@ -14,7 +16,13 @@ from src.schemas.book import (
 )
 from src.services.library import Library
 
-router = APIRouter(prefix="/books", tags=["Books"])
+router = APIRouter(
+    prefix="/books",
+    tags=["Books"],
+    dependencies=[
+        Depends(RoleVerifier(allowed_roles=[Role.LIBRARIAN]))
+    ],
+)
 
 
 @router.get(
@@ -59,7 +67,9 @@ async def extend_borrow_book(
     extend_borrow_book: BookExtendBorrow,
     library: Annotated[Library, Depends(get_library)],
 ) -> BookBorrowResponse:
-    return await library.extend_borrow_book(book_id=book_id, days=extend_borrow_book.days)
+    return await library.extend_borrow_book(
+        book_id=book_id, days=extend_borrow_book.days
+    )
 
 
 @router.patch("/{book_id}/return", response_model=BookBorrowResponse)

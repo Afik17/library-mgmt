@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from motor import motor_asyncio
 
+from src.models.mongodb.user import UserDoc
 from src.core.config import get_settings
 from src.core.exceptions.base import LibraryError
 from src.models.mongodb.book import BookDoc
@@ -21,7 +22,7 @@ async def lifespan(app: FastAPI):
     client = motor_asyncio.AsyncIOMotorClient(full_uri)
     await init_beanie(
         database=client[settings.mongodb.db],
-        document_models=[BookDoc, PatronDoc, BorrowDoc],
+        document_models=[BookDoc, PatronDoc, BorrowDoc, UserDoc],
     )
     yield
 

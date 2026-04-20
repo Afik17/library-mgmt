@@ -2,7 +2,9 @@ from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, status
 
+from src.core.security import RoleVerifier
 from src.routers.dependencies.library import get_library
+from src.schemas.auth import Role
 from src.schemas.borrow import BorrowFine, BorrowResponse, BorrowStatus
 from src.schemas.patron import (
     PatronCreate,
@@ -12,7 +14,11 @@ from src.schemas.patron import (
 )
 from src.services.library import Library
 
-router = APIRouter(prefix="/patrons", tags=["Patrons"])
+router = APIRouter(
+    prefix="/patrons",
+    tags=["Patrons"],
+    dependencies=[Depends(RoleVerifier(allowed_roles=[Role.LIBRARIAN, Role.PATRON]))],
+)
 
 
 @router.get("/{patron_id}", response_model=Optional[PatronResponse])
@@ -36,7 +42,9 @@ async def get_patron_borrows(
     library: Annotated[Library, Depends(get_library)],
     borrow_status: Optional[BorrowStatus] = None,
 ) -> list[BorrowResponse]:
-    return await library.get_patron_borrows(patron_id=patron_id, borrow_status=borrow_status)
+    return await library.get_patron_borrows(
+        patron_id=patron_id, borrow_status=borrow_status
+    )
 
 
 @router.get("/{patron_id}/borrows/fines", response_model=BorrowFine)
