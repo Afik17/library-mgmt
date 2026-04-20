@@ -1,6 +1,8 @@
 from dataclasses import asdict
 from typing import Generic, Optional, Type, TypeVar
 
+from src.entities.user import User
+from src.models.mongodb.user import UserDoc
 from src.entities.book import Book
 from src.entities.borrow import Borrow
 from src.entities.patron import Patron
@@ -69,3 +71,7 @@ class PatronMongoRepo(MongoRepo[Patron, PatronDoc]):
 class BorrowMongoRepo(MongoRepo[Borrow, BorrowDoc]):
     def __init__(self):
         super().__init__(entity_class=Borrow, doc_class=BorrowDoc, id_field="borrow_id")
+
+class UserMongoRepo(MongoRepo[User, UserDoc]):
+    def __init__(self):
+        super().__init__(entity_class=User, doc_class=UserDoc, id_field="username")
