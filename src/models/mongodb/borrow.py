@@ -1,10 +1,18 @@
-from mongoengine import Document, StringField, DateField
+from datetime import datetime
+from typing import Optional
+
+from beanie import Document
+
+from pydantic import Field
 
 
 class BorrowDoc(Document):
-    borrow_id = StringField(unique=True, required=True)
-    book_id = StringField(required=True)
-    patron_id = StringField(required=True)
-    checkout_date = DateField(required=True)
-    due_date = DateField(required=True)
-    return_date = DateField()
+    borrow_id: str = Field(unique=True)
+    book_id: str
+    patron_id: str
+    checkout_date: datetime
+    due_date: datetime
+    return_date: Optional[datetime] = None
+
+    class Settings:
+        name = "borrows"
